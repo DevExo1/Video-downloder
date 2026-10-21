@@ -181,10 +181,10 @@ final class DownloadQueue {
             startEligibleItems()
         }
 
-        guard let service = toolchain.service else {
+        guard let service = toolchain.service(for: item.options.backend) else {
             finish(item, failure: DownloadFailure(
-                kind: .toolMissing(ExternalTool.ytdlp.rawValue),
-                underlyingMessage: "yt-dlp could not be found. Set its location in Settings."
+                kind: .toolMissing(item.options.backend.rawValue),
+                underlyingMessage: "\(item.options.backend.displayName) could not be found. Set its location in Settings."
             ))
             return
         }
@@ -205,13 +205,15 @@ final class DownloadQueue {
 
         let session = service.makeDownloadSession(url: item.sourceURL, options: item.options)
         sessions[item.id] = session
-        item.log.append("$ \(session.configuration.displayCommand)")
+        item.log.append("$ " + (item.options.backend == .galleryDL
+            ? service.previewCommand(url: item.sourceURL, options: item.options)
+            : session.configuration.displayCommand))
 
         do {
             try session.start()
         } catch {
             finish(item, failure: DownloadFailure(
-                kind: .toolMissing(ExternalTool.ytdlp.rawValue),
+                kind: .toolMissing(item.options.backend.rawValue),
                 underlyingMessage: error.localizedDescription
             ))
             return
@@ -225,7 +227,15 @@ final class DownloadQueue {
             switch event {
             case .standardOutput(let line), .standardError(let line):
                 record(line, on: item)
-                apply(ProgressParser.parse(line), to: item, tracker: &tracker)
+                if item.options.backend == .galleryDL {
+                    if let url = GalleryDLArguments.fileURL(from: line, outputDirectory: item.options.outputDirectory), !item.outputURLs.contains(url) {
+                        item.outputURLs.append(url)
+                        item.completedItemCount = item.outputURLs.count
+                        tracker.recordProcessed(path: url.path(percentEncoded: false))
+                    }
+                } else {
+                    apply(ProgressParser.parse(line), to: item, tracker: &tracker)
+                }
             case .finished(let processResult):
                 result = processResult
             }
@@ -243,7 +253,10 @@ final class DownloadQueue {
 
         if result.isSuccess {
             item.outputURL = tracker.finalURL
-            item.completedFileSize = tracker.fileSize()
+            item.completedFileSize = item.options.backend == .galleryDL
+                ? item.outputURLs.reduce(Int64(0)) { total, url in
+                    total + Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+                } : tracker.fileSize()
             finish(item, failure: nil)
         } else {
             var failure = DownloadFailure.classify(

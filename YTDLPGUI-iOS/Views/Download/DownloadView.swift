@@ -5,6 +5,7 @@ import UIKit
 struct DownloadView: View {
     @Environment(AppModel.self) private var model
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @FocusState private var isLinkFieldFocused: Bool
     @State private var isDropTargeted = false
     @State private var queuedCount = 0
@@ -14,19 +15,45 @@ struct DownloadView: View {
     var body: some View {
         NavigationStack {
             Form {
+                ScreenIntroduction(
+                    eyebrow: "YTDLP GUI", title: "Make it yours.",
+                    detail: "Your favourite videos, audio and galleries, saved in one place.",
+                    symbol: "arrow.down.right.circle"
+                )
+                Section("Downloader") {
+                    DownloaderPicker(options: Binding(get: { composer.options }, set: { composer.options = $0 }))
+                }
+                .mobileCardRow()
                 LinkSection(isFieldFocused: $isLinkFieldFocused)
-                AnalysisSection()
-                ModeSection()
+                if composer.options.backend == .ytdlp {
+                    AnalysisSection()
+                        .mobileCardRow()
+                    ModeSection()
+                        .mobileCardRow()
+                } else {
+                    Section("Gallery") {
+                        GalleryOptionsFields(options: Binding(get: { composer.options }, set: { composer.options = $0 }))
+                    }
+                    .mobileCardRow()
+                }
                 AdvisoriesSection()
-                advancedOptionsSection
+                    .mobileCardRow()
+                if composer.options.backend == .ytdlp {
+                    advancedOptionsSection
+                        .mobileCardRow()
+                }
                 if model.settings.showCommandPreview {
                     CommandPreviewSection()
+                        .mobileCardRow()
                 }
             }
             .readableContentWidth()
+            .contentMargins(.top, 8, for: .scrollContent)
+            .listSectionSpacing(20)
             .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Download")
-            .animation(.default, value: composer.analysis)
+            .navigationBarTitleDisplayMode(.inline)
+            .animation(reduceMotion ? nil : .smooth, value: composer.analysis)
             .bottomBar { downloadBar }
             .background { keyboardCommands }
             .dropDestination(for: DroppedLink.self) { links, _ in
@@ -49,9 +76,20 @@ struct DownloadView: View {
             NavigationLink {
                 AdvancedOptionsView()
             } label: {
-                Label("Advanced Options", systemImage: "gearshape.2")
+                Label {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Advanced Options").font(.headline)
+                        Text("Fine-tune every download")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                } icon: {
+                    Image(systemName: "slider.horizontal.3")
+                        .foregroundStyle(MobileTheme.accent)
+                }
             }
             .badge(composer.customizedAdvancedOptionCount)
+            .accessibilityLabel("Advanced Options")
             .accessibilityValue(advancedOptionsAccessibilityValue)
         } footer: {
             Text("File names, subtitles, metadata, SponsorBlock, playlists, network and sign-in.")
@@ -70,11 +108,12 @@ struct DownloadView: View {
 
     private var downloadBar: some View {
         Button(action: startDownload) {
-            Label(composer.downloadButtonTitle, systemImage: "arrow.down.circle.fill")
+            Label(composer.downloadButtonTitle, systemImage: "arrow.down")
                 .font(.headline)
-                .frame(maxWidth: .infinity)
+                .foregroundStyle(canDownload ? MobileTheme.onAccent : Color.secondary)
+                .frame(maxWidth: .infinity, minHeight: 28)
         }
-        .buttonStyle(.borderedProminent)
+        .mobileGlassButton(prominent: true)
         .controlSize(.large)
         .keyboardShortcut(.return, modifiers: .command)
         .disabled(!canDownload)
@@ -185,7 +224,7 @@ private struct CommandPreviewSection: View {
         } header: {
             Text("Command Preview")
         } footer: {
-            Text("yt-dlp runs inside the app rather than in a shell, so the quoting is only for readability. Passwords, codes and proxy credentials are shown as PRIVATE, here and in download logs. The app also connects its own progress reporting and processing, which isn't shown.")
+            Text("\(model.composer.options.backend.displayName) runs inside the app rather than in a shell, so the quoting is only for readability. Passwords, codes and proxy credentials are shown as PRIVATE, here and in download logs. The app also connects its own progress reporting and processing, which isn't shown.")
         }
     }
 }

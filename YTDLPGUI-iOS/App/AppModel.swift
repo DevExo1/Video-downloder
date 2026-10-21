@@ -276,6 +276,7 @@ final class AppModel {
         for link in links {
             if let kind = link.kind {
                 var options = settings.storedOptions
+                options.backend = .ytdlp
                 options.kind = kind
                 queuedCount += queue.enqueue(urls: link.urls, options: options).count
             } else {
@@ -302,7 +303,7 @@ final class AppModel {
     @discardableResult
     func enqueueFromShortcut(url: String, kind: DownloadKind?) -> Bool {
         var options = settings.storedOptions
-        if let kind { options.kind = kind }
+        if let kind { options.backend = .ytdlp; options.kind = kind }
         let added = queue.enqueue(urls: [url], options: options)
         selectedTab = .queue
         return !added.isEmpty

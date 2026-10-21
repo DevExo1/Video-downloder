@@ -32,7 +32,7 @@ struct CommandPreviewCard: View {
                     }
 
                     HStack {
-                        Text("Arguments are passed directly to yt-dlp. No shell is involved, so quoting here is only for readability.")
+                        Text("Arguments are passed directly to \(model.composer.options.backend.displayName). No shell is involved, so quoting here is only for readability.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)

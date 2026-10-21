@@ -16,7 +16,7 @@ struct SetupView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text(toolchain.isHomebrewInstalled
                              ? "Homebrew is installed. Run this in Terminal:"
-                             : "The easiest way to install yt-dlp is with Homebrew. Install Homebrew first, then run:")
+                             : "The easiest way to install the downloaders is with Homebrew. Install Homebrew first, then run:")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -39,7 +39,7 @@ struct SetupView: View {
 
                 SectionCard(title: "Already installed?", systemImage: "folder.badge.questionmark") {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("If yt-dlp lives somewhere unusual — a pipx environment, a custom prefix, or a manually downloaded binary — point the app at it directly.")
+                        Text("If your downloader lives somewhere unusual — a pipx environment, a custom prefix, or a manually downloaded binary — point the app at it directly.")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -49,6 +49,12 @@ struct SetupView: View {
                                 chooseExecutable(for: .ytdlp)
                             } label: {
                                 Label("Choose yt-dlp…", systemImage: "folder")
+                            }
+
+                            Button {
+                                chooseExecutable(for: .galleryDL)
+                            } label: {
+                                Label("Choose gallery-dl…", systemImage: "photo.stack")
                             }
 
                             Button {
@@ -94,10 +100,10 @@ struct SetupView: View {
                 .foregroundStyle(.tint)
                 .accessibilityHidden(true)
 
-            Text("yt-dlp isn't installed yet")
+            Text("Install a downloader")
                 .font(.title2.weight(.semibold))
 
-            Text("YTDLP GUI is a front end for the yt-dlp command-line tool. Install it once and this screen won't come back.")
+            Text("Use yt-dlp for video and audio, or gallery-dl for image galleries and collections. Install either tool to get started.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

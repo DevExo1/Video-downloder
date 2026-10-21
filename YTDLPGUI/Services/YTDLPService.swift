@@ -10,6 +10,13 @@ struct YTDLPService: Sendable {
     /// The app's yt-dlp plugin folder, when this yt-dlp can load it (see `YTDLPPlugins`).
     var pluginDirectory: URL? = nil
 
+    var backend: DownloadBackend = .ytdlp
+
+    private func downloadArguments(url: String, options: DownloadOptions) -> [String] {
+        if backend == .galleryDL { return GalleryDLArguments.download(url: url, options: options) }
+        return ArgumentBuilder.downloadArguments(url: url, options: options, ffmpegURL: ffmpegURL, pluginDirectory: pluginDirectory)
+    }
+
     // MARK: - Metadata
 
     struct AnalysisFailure: LocalizedError, Sendable {
@@ -77,12 +84,7 @@ struct YTDLPService: Sendable {
     func makeDownloadSession(url: String, options: DownloadOptions) -> ProcessSession {
         let configuration = ProcessConfiguration(
             executableURL: executableURL,
-            arguments: ArgumentBuilder.downloadArguments(
-                url: url,
-                options: options,
-                ffmpegURL: ffmpegURL,
-                pluginDirectory: pluginDirectory
-            ),
+            arguments: downloadArguments(url: url, options: options),
             // Running in the destination keeps any relative path yt-dlp reports resolvable.
             currentDirectoryURL: options.outputDirectory
         )
@@ -93,9 +95,9 @@ struct YTDLPService: Sendable {
     func previewCommand(url: String, options: DownloadOptions) -> String {
         ShellQuoting.commandLine(
             executable: executableURL.path(percentEncoded: false),
-            arguments: ArgumentBuilder.downloadArguments(
-                url: url, options: options, ffmpegURL: ffmpegURL, pluginDirectory: pluginDirectory
-            )
+            arguments: backend == .galleryDL
+                ? ShellQuoting.redactingSecrets(downloadArguments(url: url, options: options))
+                : downloadArguments(url: url, options: options)
         )
     }
 

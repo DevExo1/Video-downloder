@@ -26,6 +26,7 @@ struct EngineInfo: Equatable, Sendable {
     var certifiVersion: String?
     /// Why an installed update couldn't be used, when the engine fell back to the bundled copy.
     var updateError: String? = nil
+    var galleryDLVersion: String? = nil
 }
 
 /// A yt-dlp release available on PyPI.

@@ -10,6 +10,9 @@ struct SettingsRootView: View {
             ToolSettingsView(tool: .ytdlp)
                 .tabItem { Label("yt-dlp", systemImage: "arrow.down.app") }
 
+            ToolSettingsView(tool: .galleryDL)
+                .tabItem { Label("gallery-dl", systemImage: "photo.stack") }
+
             ToolSettingsView(tool: .ffmpeg)
                 .tabItem { Label("ffmpeg", systemImage: "film.stack") }
 

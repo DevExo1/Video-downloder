@@ -19,6 +19,12 @@ enum FinderIntegration {
         }
     }
 
+    static func reveal(_ urls: [URL]) {
+        let existing = urls.filter { FileManager.default.fileExists(atPath: $0.path(percentEncoded: false)) }
+        if !existing.isEmpty { NSWorkspace.shared.activateFileViewerSelecting(existing) }
+        else if let first = urls.first { reveal(first) }
+    }
+
     /// Opens a file with the user's default application.
     static func open(_ url: URL) {
         NSWorkspace.shared.open(url)

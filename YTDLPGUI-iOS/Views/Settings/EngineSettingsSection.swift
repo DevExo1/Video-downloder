@@ -26,6 +26,7 @@ struct EngineSettingsSection: View {
                     }
                 }
                 .accessibilityElement(children: .combine)
+                LabeledContent("gallery-dl (bundled)", value: info.galleryDLVersion ?? "Not available")
                 LabeledContent("Python", value: info.pythonVersion)
                 LabeledContent("yt-dlp-ejs", value: info.ejsVersion ?? "Not available")
                 LabeledContent("certifi", value: info.certifiVersion ?? "Not available")
@@ -52,7 +53,7 @@ struct EngineSettingsSection: View {
         } header: {
             Text("Engine")
         } footer: {
-            Text("If downloads from a site suddenly stop working, updating yt-dlp is usually the fix. Updates come from PyPI and are checked against their published fingerprints before they're installed.")
+            Text("If downloads from a site suddenly stop working, updating yt-dlp is usually the fix. Updates come from PyPI and are checked against their published fingerprints before they're installed. gallery-dl is bundled and updates with the app.")
         }
     }
 

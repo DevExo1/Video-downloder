@@ -88,6 +88,9 @@ def _analyze(job_id, parsed, cache_dir):
 def download(payload):
     """The `download` command."""
     job_id, argv = _job_request(payload)
+    if isinstance(argv, list) and argv[:1] == ['--ytdlpgui-gallery-dl']:
+        from . import gallery
+        return gallery.download(payload)
     parsed = options.parse(argv)
     info_file = parsed.options.load_info_filename
     if not parsed.urls and info_file is None:

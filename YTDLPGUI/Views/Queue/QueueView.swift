@@ -122,7 +122,7 @@ struct QueueView: View {
     @ViewBuilder
     private func contextMenu(for item: DownloadItem) -> some View {
         if item.canRevealInFinder, let url = item.outputURL {
-            Button("Reveal in Finder") { FinderIntegration.reveal(url) }
+            Button("Reveal in Finder") { FinderIntegration.reveal(item.outputURLs.isEmpty ? [url] : item.outputURLs) }
             Button("Open") { FinderIntegration.open(url) }
             Divider()
         }

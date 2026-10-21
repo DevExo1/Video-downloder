@@ -243,6 +243,8 @@ struct ToolSettingsView: View {
             switch tool {
             case .ytdlp:
                 Link("yt-dlp on GitHub", destination: URL(string: "https://github.com/yt-dlp/yt-dlp")!)
+            case .galleryDL:
+                Link("gallery-dl on GitHub", destination: URL(string: "https://github.com/mikf/gallery-dl")!)
             case .ffmpeg:
                 Link("ffmpeg.org", destination: URL(string: "https://ffmpeg.org")!)
             }

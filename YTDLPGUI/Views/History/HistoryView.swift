@@ -134,7 +134,7 @@ struct HistoryView: View {
     @ViewBuilder
     private func contextMenu(for entry: HistoryEntry) -> some View {
         if let url = entry.outputURL, entry.fileExists {
-            Button("Reveal in Finder") { FinderIntegration.reveal(url) }
+            Button("Reveal in Finder") { FinderIntegration.reveal(entry.outputURLs.isEmpty ? [url] : entry.outputURLs) }
             Button("Open") { FinderIntegration.open(url) }
             Divider()
         }

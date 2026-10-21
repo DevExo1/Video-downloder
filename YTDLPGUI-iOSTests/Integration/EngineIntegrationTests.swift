@@ -87,7 +87,34 @@ struct EngineIntegrationTests {
         let info = try await YTDLPEngine.shared.start()
         #expect(info.pythonVersion.hasPrefix("3.14"))
         #expect(!info.ytdlpVersion.isEmpty)
+        #expect(info.galleryDLVersion != nil, "gallery-dl must be importable")
         #expect(info.ejsVersion != nil, "yt-dlp-ejs must be importable, or YouTube challenges can't be solved")
+    }
+
+    @Test("gallery-dl downloads an image through embedded Python and reports its file")
+    func downloadsGalleryImage() async throws {
+        let served = try Self.makeOutputFolder()
+        let output = try Self.makeOutputFolder()
+        defer {
+            try? FileManager.default.removeItem(at: served)
+            try? FileManager.default.removeItem(at: output)
+        }
+        let image = try #require(Data(base64Encoded: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j3ioAAAAASUVORK5CYII="))
+        try image.write(to: served.appending(path: "gallery.png"))
+        let server = try LocalHTTPServer(root: served)
+        let base = try await server.start()
+        defer { server.stop() }
+        var options = Self.options(kind: .video, output: output)
+        options.backend = .galleryDL
+        options.galleryFilename = "{filename}.{extension}"
+        let (events, result) = try await Self.run(url: base.appending(path: "gallery.png"), options: options)
+        let log = Self.logLines(events).joined(separator: "\n")
+        #expect(result.isSuccess, "\(log)")
+        #expect(result.files.count == 1, "\(log)")
+        let file = try #require(result.files.first.map(URL.init(fileURLWithPath:)))
+        #expect(file.lastPathComponent == "gallery.png")
+        #expect(try Data(contentsOf: file) == image)
+        #expect(events.contains { if case .file = $0 { true } else { false } })
     }
 
     @Test("A single file downloads over HTTP and lands in the output folder")
