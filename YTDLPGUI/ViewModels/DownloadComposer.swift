@@ -32,7 +32,14 @@ final class DownloadComposer {
 
     /// Saved as they change, so a choice made here or in Advanced Options survives a relaunch.
     var options: DownloadOptions {
-        didSet { settings.rememberOptions(options) }
+        didSet {
+            settings.rememberOptions(options)
+            if options.backend != oldValue.backend {
+                analysisTask?.cancel()
+                analysis = .idle
+                analyzedURL = nil
+            }
+        }
     }
     private(set) var analysis: AnalysisState = .idle
     /// Shown as a transient banner, e.g. after adding several URLs at once.
@@ -67,23 +74,23 @@ final class DownloadComposer {
 
     /// Error when Custom Arguments contain denied flags such as `--exec`.
     var customArgumentBlockMessage: String? {
-        CustomArgumentPolicy.validationMessage(for: options.customArguments)
+        options.backend == .galleryDL ? GalleryDLArguments.validationMessage(for: options) : CustomArgumentPolicy.validationMessage(for: options.customArguments)
     }
 
     var hasBlockedCustomArguments: Bool { customArgumentBlockMessage != nil }
 
     var canAnalyze: Bool {
-        toolchain.isReady && detectedURLs.count == 1 && !analysis.isAnalyzing && !hasBlockedCustomArguments
+        options.backend == .ytdlp && toolchain.isReady(for: options.backend) && detectedURLs.count == 1 && !analysis.isAnalyzing && !hasBlockedCustomArguments
     }
 
     var canDownload: Bool {
-        toolchain.isReady && hasValidURL && !hasBlockedCustomArguments
+        toolchain.isReady(for: options.backend) && hasValidURL && !hasBlockedCustomArguments
     }
 
     /// The exact command that will run, for the preview panel.
     var commandPreview: String {
-        guard let service = toolchain.service else {
-            return "yt-dlp is not installed yet."
+        guard let service = toolchain.service(for: options.backend) else {
+            return "\(options.backend.displayName) is not installed. Choose its executable in Settings."
         }
         let url = detectedURLs.first ?? "URL"
         return service.previewCommand(url: url, options: options)
@@ -91,6 +98,10 @@ final class DownloadComposer {
 
     /// Warnings worth surfacing before the user presses Download.
     var advisories: [String] {
+        if options.backend == .galleryDL {
+            if let message = customArgumentBlockMessage { return [message] }
+            return toolchain.isReady(for: .galleryDL) ? [] : ["Install gallery-dl with brew install gallery-dl, or choose its executable in Settings › gallery-dl."]
+        }
         var messages: [String] = []
         if let block = customArgumentBlockMessage {
             messages.append(block)
@@ -161,7 +172,7 @@ final class DownloadComposer {
 
     /// Fetches metadata for the current URL.
     func analyze() {
-        guard let url = detectedURLs.first, toolchain.isReady else { return }
+        guard canAnalyze, let url = detectedURLs.first else { return }
         if let block = customArgumentBlockMessage {
             showStatus(block)
             return

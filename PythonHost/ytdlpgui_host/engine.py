@@ -189,6 +189,7 @@ def _versions(current):
         'yt_dlp_source': current.source,
         'ejs': _package_version('yt_dlp_ejs', 'version'),
         'certifi': _package_version('certifi', '__version__'),
+        'gallery_dl': _package_version('gallery_dl.version', '__version__'),
         'update_error': current.update_error,
     }
 

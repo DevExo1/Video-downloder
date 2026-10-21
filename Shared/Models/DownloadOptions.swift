@@ -1,5 +1,12 @@
 import Foundation
 
+enum DownloadBackend: String, Codable, CaseIterable, Identifiable, Sendable {
+    case ytdlp = "yt-dlp"
+    case galleryDL = "gallery-dl"
+    var id: String { rawValue }
+    var displayName: String { rawValue }
+}
+
 // MARK: - Download kind
 
 enum DownloadKind: String, Codable, CaseIterable, Identifiable, Sendable {
@@ -305,6 +312,11 @@ enum CookieBrowser: String, Codable, CaseIterable, Identifiable, Sendable {
 struct DownloadOptions: Codable, Equatable, Sendable {
 
     // Core
+    var backend: DownloadBackend = .ytdlp
+    /// gallery-dl uses {keyword} templates, independently of yt-dlp's %(keyword)s syntax.
+    /// Empty preserves each site's default filename and subfolders.
+    var galleryFilename: String = ""
+    var galleryRange: String = ""
     var kind: DownloadKind = .video
     var videoQuality: VideoQuality = .best
     var container: VideoContainer = .auto
@@ -372,6 +384,7 @@ struct DownloadOptions: Codable, Equatable, Sendable {
 
     /// A one-line description of the chosen preset, for queue rows and history.
     var formatSummary: String {
+        if backend == .galleryDL { return "Gallery · Original files" }
         switch kind {
         case .video:
             let container = container == .auto ? "" : " · \(container.displayName)"
@@ -404,6 +417,9 @@ extension DownloadOptions {
             (try? container.decodeIfPresent(T.self, forKey: key)) ?? fallback
         }
 
+        options.backend = value(.backend, options.backend)
+        options.galleryFilename = value(.galleryFilename, options.galleryFilename)
+        options.galleryRange = value(.galleryRange, options.galleryRange)
         options.kind = value(.kind, options.kind)
         options.videoQuality = value(.videoQuality, options.videoQuality)
         options.container = value(.container, options.container)

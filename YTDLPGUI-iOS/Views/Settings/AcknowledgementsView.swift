@@ -30,6 +30,11 @@ private struct Component: Identifiable {
 
     static let all: [Component] = [
         Component(name: "Python 3.14", licence: "PSF License", website: URL(string: "https://www.python.org")),
+        Component(name: "gallery-dl", licence: "GPL-2.0-only", website: URL(string: "https://github.com/mikf/gallery-dl")),
+        Component(name: "Requests", licence: "Apache-2.0", website: URL(string: "https://requests.readthedocs.io")),
+        Component(name: "urllib3", licence: "MIT", website: URL(string: "https://urllib3.readthedocs.io")),
+        Component(name: "charset-normalizer", licence: "MIT", website: URL(string: "https://github.com/jawah/charset_normalizer")),
+        Component(name: "idna", licence: "BSD-3-Clause", website: URL(string: "https://github.com/kjd/idna")),
         Component(name: "yt-dlp", licence: "Unlicense", website: URL(string: "https://github.com/yt-dlp/yt-dlp")),
         Component(
             name: "yt-dlp-ejs",

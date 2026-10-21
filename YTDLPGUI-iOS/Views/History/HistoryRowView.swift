@@ -8,7 +8,7 @@ struct HistoryRowView: View {
 
     var body: some View {
         ThumbnailRowLayout(thumbnailWidth: 96) {
-            ThumbnailView(url: entry.thumbnailURL, placeholderSymbol: entry.kind.symbolName, cornerRadius: 12)
+            ThumbnailView(url: entry.thumbnailURL, placeholderSymbol: entry.options?.backend == .galleryDL ? "photo.stack" : entry.kind.symbolName, cornerRadius: 12)
                 .opacity(entry.succeeded ? 1 : 0.6)
         } content: {
             VStack(alignment: .leading, spacing: 3) {

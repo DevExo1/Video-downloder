@@ -4,6 +4,7 @@ import Foundation
 enum ExternalTool: String, CaseIterable, Identifiable, Sendable {
     case ytdlp = "yt-dlp"
     case ffmpeg = "ffmpeg"
+    case galleryDL = "gallery-dl"
 
     var id: String { rawValue }
 
@@ -23,7 +24,7 @@ enum ExternalTool: String, CaseIterable, Identifiable, Sendable {
     /// Arguments that make the tool print its version and exit.
     var versionArguments: [String] {
         switch self {
-        case .ytdlp: ["--version"]
+        case .ytdlp, .galleryDL: ["--version"]
         case .ffmpeg: ["-version"]
         }
     }
@@ -31,13 +32,15 @@ enum ExternalTool: String, CaseIterable, Identifiable, Sendable {
     var symbolName: String {
         switch self {
         case .ytdlp: "arrow.down.app"
+        case .galleryDL: "photo.stack"
         case .ffmpeg: "film.stack"
         }
     }
 
     var purpose: String {
         switch self {
-        case .ytdlp: "Downloads the media. Required."
+        case .ytdlp: "Downloads video and audio."
+        case .galleryDL: "Downloads image galleries and collections in their original formats."
         case .ffmpeg: "Merges video with audio, converts audio and embeds metadata. Strongly recommended."
         }
     }

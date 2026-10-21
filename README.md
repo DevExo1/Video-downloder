@@ -4,7 +4,7 @@
 
 # YTDLP GUI
 
-**A native macOS, iPhone and iPad front end for [yt-dlp](https://github.com/yt-dlp/yt-dlp).**
+**A native macOS, iPhone and iPad front end for [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [gallery-dl](https://github.com/mikf/gallery-dl).**
 
 Paste a link, pick a quality, click Download. Everything else stays out of the way
 until you ask for it.
@@ -32,6 +32,38 @@ drives the copy you install yourself, so you decide when it updates and where it
 iPhone and iPad can't launch other programs, so the [iOS app](#iphone-and-ipad) is different: it
 carries its own copy of yt-dlp, running inside an embedded Python interpreter, and does with
 Apple's media frameworks what ffmpeg does on the Mac.
+
+## Gallery downloads
+
+Choose **Galleries · gallery-dl** in the Download screen to download image galleries and
+collections. Gallery jobs use the same queue, cancel, retry and history actions as video jobs;
+history remembers the downloader used for each request. On Mac, Reveal in Finder selects all
+reported gallery files. On iPhone and iPad, gallery files can be previewed and shared from the
+queue and history, and are available in the app's Documents folder in Files.
+
+On **macOS**, install the separate tool with `brew install gallery-dl`. The app detects it
+alongside yt-dlp and ffmpeg, or you can choose its executable in **Settings › gallery-dl**.
+Either downloader is enough to get past setup; each mode requires its own tool.
+
+On **iOS and iPadOS**, gallery-dl and its Requests dependencies are bundled with the embedded
+Python runtime. Run `./Tools/fetch-ios-dependencies.sh` again before building. The pinned wheels
+and their license files are copied into the bundle. gallery-dl is GPL-2.0-only; its matching
+source is available from the [upstream release](https://github.com/mikf/gallery-dl/releases/tag/v1.32.17).
+gallery-dl updates with the app; Settings' existing updater updates yt-dlp only.
+
+Gallery options include a filename template, file range, metadata JSON, archive, cookies,
+rate limit, proxy, user agent, ASCII filenames and overwriting. Empty filename and range fields
+keep the site's defaults and download all files. Templates use gallery-dl's `{keyword}` syntax,
+independent of the yt-dlp filename template. Archives use a separate `.gallery-dl.sqlite3` file
+so they never overwrite a yt-dlp text archive. Mac browser cookies and iOS imported cookies are
+supported.
+
+Gallery links download directly; the Analyze action and video/audio conversion options belong
+to yt-dlp mode. Gallery mode ignores yt-dlp custom arguments and user configuration files.
+Embedded gallery jobs run one at a time because gallery-dl has shared configuration state;
+yt-dlp jobs can still run concurrently. Features requiring optional external programs or
+browser impersonation packages are unavailable in the embedded gallery backend. Files are
+kept in their original formats and are not automatically saved to Photos.
 
 ## Features
 
@@ -290,7 +322,7 @@ whenever the pins in the script change:
 ./Tools/fetch-ios-dependencies.sh
 ```
 
-It downloads BeeWare's Python support package and the yt-dlp, yt-dlp-ejs and certifi wheels,
+It downloads BeeWare's Python support package and the yt-dlp, yt-dlp-ejs, certifi, gallery-dl and Requests dependency wheels,
 verifies each against a pinned SHA-256 digest, and unpacks them into the git-ignored `Vendor/`
 folder. A build phase (`Tools/install-ios-python.sh`) then installs them into the app bundle.
 

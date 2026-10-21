@@ -56,58 +56,60 @@ struct OutputCard: View {
                     .foregroundStyle(.orange)
                 }
 
-                HStack(spacing: 8) {
-                    TextField("File name template", text: $composer.options.outputTemplate)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.system(.callout, design: .monospaced))
-                        .accessibilityLabel("Output file name template")
+                if composer.options.backend == .ytdlp {
+                    HStack(spacing: 8) {
+                        TextField("File name template", text: $composer.options.outputTemplate)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.system(.callout, design: .monospaced))
+                            .accessibilityLabel("Output file name template")
 
-                    Menu {
-                        ForEach(ArgumentBuilder.outputTemplatePresets) { preset in
-                            Button {
-                                composer.options.outputTemplate = preset.template
-                            } label: {
-                                Text(preset.name)
-                                Text(preset.example)
+                        Menu {
+                            ForEach(ArgumentBuilder.outputTemplatePresets) { preset in
+                                Button {
+                                    composer.options.outputTemplate = preset.template
+                                } label: {
+                                    Text(preset.name)
+                                    Text(preset.example)
+                                }
                             }
+                            Divider()
+                            Button("Reset to Default") {
+                                composer.options.outputTemplate = DownloadOptions.defaultOutputTemplate
+                            }
+                        } label: {
+                            Label("Templates", systemImage: "textformat")
+                                .labelStyle(.iconOnly)
                         }
-                        Divider()
-                        Button("Reset to Default") {
-                            composer.options.outputTemplate = DownloadOptions.defaultOutputTemplate
+                        .menuStyle(.borderlessButton)
+                        .fixedSize()
+                        .help("Choose a ready-made naming pattern")
+                        .accessibilityLabel("Filename template presets")
+                    }
+
+                    DisclosureGroup(isExpanded: $showTemplateHelp) {
+                        VStack(alignment: .leading, spacing: 3) {
+                            ForEach(templateHints, id: \.0) { token, meaning in
+                                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                    Text(token)
+                                        .font(.caption.monospaced())
+                                        .frame(width: 150, alignment: .leading)
+                                    Text(meaning)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            Link(
+                                "Full output template reference",
+                                destination: URL(string: "https://github.com/yt-dlp/yt-dlp#output-template")!
+                            )
+                            .font(.caption)
+                            .padding(.top, 4)
                         }
+                        .padding(.top, 6)
                     } label: {
-                        Label("Templates", systemImage: "textformat")
-                            .labelStyle(.iconOnly)
+                        Text("Template placeholders")
+                            .font(.caption)
                     }
-                    .menuStyle(.borderlessButton)
-                    .fixedSize()
-                    .help("Choose a ready-made naming pattern")
-                    .accessibilityLabel("Filename template presets")
-                }
-
-                DisclosureGroup(isExpanded: $showTemplateHelp) {
-                    VStack(alignment: .leading, spacing: 3) {
-                        ForEach(templateHints, id: \.0) { token, meaning in
-                            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Text(token)
-                                    .font(.caption.monospaced())
-                                    .frame(width: 150, alignment: .leading)
-                                Text(meaning)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        Link(
-                            "Full output template reference",
-                            destination: URL(string: "https://github.com/yt-dlp/yt-dlp#output-template")!
-                        )
-                        .font(.caption)
-                        .padding(.top, 4)
-                    }
-                    .padding(.top, 6)
-                } label: {
-                    Text("Template placeholders")
-                        .font(.caption)
                 }
             }
         }
