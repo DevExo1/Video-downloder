@@ -42,6 +42,10 @@ final class DownloadComposer {
     var options: DownloadOptions {
         didSet {
             if savesOptionChanges { settings.rememberOptions(options) }
+            if options.backend != oldValue.backend {
+                abandonAnalysis()
+                analysis = .idle
+            }
         }
     }
     private(set) var analysis: AnalysisState = .idle
@@ -100,13 +104,13 @@ final class DownloadComposer {
 
     /// Set when Custom Arguments contain something the embedded engine refuses.
     var customArgumentBlockMessage: String? {
-        CustomArgumentPolicy.validationMessage(for: options.customArguments, context: .embedded)
+        options.backend == .galleryDL ? GalleryDLArguments.validationMessage(for: options) : CustomArgumentPolicy.validationMessage(for: options.customArguments, context: .embedded)
     }
 
     var hasBlockedCustomArguments: Bool { customArgumentBlockMessage != nil }
 
     var canAnalyze: Bool {
-        engine.isReady && detectedURLs.count == 1 && !analysis.isAnalyzing && !hasBlockedCustomArguments
+        options.backend == .ytdlp && engine.isReady && detectedURLs.count == 1 && !analysis.isAnalyzing && !hasBlockedCustomArguments
     }
 
     var canDownload: Bool {
@@ -123,11 +127,18 @@ final class DownloadComposer {
             options: resolver.resolve(options),
             capabilities: engine.capabilities
         )
-        return ShellQuoting.commandLine(executable: "yt-dlp", arguments: ShellQuoting.redactingSecrets(arguments))
+        return ShellQuoting.commandLine(
+            executable: options.backend.rawValue,
+            arguments: ShellQuoting.redactingSecrets(arguments.filter { $0 != GalleryDLArguments.embeddedMarker })
+        )
     }
 
     /// Warnings worth showing before the user downloads.
     var advisories: [String] {
+        if options.backend == .galleryDL {
+            if let message = customArgumentBlockMessage { return [message] }
+            return cookies.isStoredFileMissing ? ["Import your cookies again in Settings › Cookies."] : []
+        }
         var messages: [String] = []
         if let block = customArgumentBlockMessage {
             messages.append(block)
@@ -220,7 +231,7 @@ final class DownloadComposer {
     /// Chooses video or audio for a link from elsewhere, such as a `ytdlpgui://` link, which any
     /// web page can open. Like `loadOptions`, not saved by itself.
     func loadKind(_ kind: DownloadKind) {
-        withoutSaving { options.kind = kind }
+        withoutSaving { options.backend = .ytdlp; options.kind = kind }
     }
 
     private func withoutSaving(_ change: () -> Void) {
@@ -252,7 +263,7 @@ final class DownloadComposer {
     /// Fetches metadata for the single link in the field.
     func analyze() {
         let urls = detectedURLs
-        guard urls.count == 1, let url = urls.first, engine.isReady else { return }
+        guard options.backend == .ytdlp, urls.count == 1, let url = urls.first, engine.isReady else { return }
         if let block = customArgumentBlockMessage {
             status.show(block)
             return

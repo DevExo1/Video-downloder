@@ -105,7 +105,7 @@ enum ToolLocator {
         guard !trimmed.isEmpty else { return nil }
 
         switch tool {
-        case .ytdlp:
+        case .ytdlp, .galleryDL:
             return trimmed.split(separator: " ").first.map(String.init)
         case .ffmpeg:
             let tokens = trimmed.split(separator: " ").map(String.init)

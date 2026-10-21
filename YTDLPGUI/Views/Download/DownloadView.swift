@@ -23,7 +23,7 @@ struct DownloadView: View {
                         .transition(.move(edge: .top).combined(with: .opacity))
                     }
 
-                    if !model.toolchain.canMergeStreams, model.toolchain.hasCompletedFirstCheck {
+                    if composer.options.backend == .ytdlp, !model.toolchain.canMergeStreams, model.toolchain.hasCompletedFirstCheck {
                         AdvisoryBanner(
                             kind: .warning,
                             title: "ffmpeg isn't installed",
@@ -34,15 +34,26 @@ struct DownloadView: View {
                         }
                     }
 
+                    SectionCard(title: "Downloader", systemImage: "arrow.down.app") {
+                        DownloaderPicker(options: $composer.options)
+                    }
+
                     URLInputCard(isDropTargeted: $isDropTargeted)
 
-                    AnalysisSection()
-
-                    FormatCard()
+                    if composer.options.backend == .ytdlp {
+                        AnalysisSection()
+                        FormatCard()
+                    } else {
+                        SectionCard(title: "Gallery", systemImage: "photo.stack") {
+                            GalleryOptionsFields(options: $composer.options)
+                        }
+                    }
 
                     OutputCard()
 
-                    AdvancedOptionsCard(isExpanded: $showAdvanced)
+                    if composer.options.backend == .ytdlp {
+                        AdvancedOptionsCard(isExpanded: $showAdvanced)
+                    }
 
                     CommandPreviewCard(isExpanded: $showCommandPreview)
 

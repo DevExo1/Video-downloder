@@ -6,7 +6,7 @@ struct QueueRowView: View {
 
     var body: some View {
         ThumbnailRowLayout(thumbnailWidth: 96) {
-            ThumbnailView(url: item.thumbnailURL, placeholderSymbol: item.options.kind.symbolName, cornerRadius: 12)
+            ThumbnailView(url: item.thumbnailURL, placeholderSymbol: item.options.backend == .galleryDL ? "photo.stack" : item.options.kind.symbolName, cornerRadius: 12)
         } content: {
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.displayTitle)

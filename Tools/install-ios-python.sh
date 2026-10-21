@@ -5,7 +5,7 @@
 #
 #   <App>.app/python/lib/python3.x/   the standard library
 #   <App>.app/app/ytdlpgui_host/      the engine host (PythonHost/ytdlpgui_host)
-#   <App>.app/app_packages/           yt-dlp, yt-dlp-ejs and certifi (Vendor/python-packages)
+#   <App>.app/app_packages/           download engines and dependencies (Vendor/python-packages)
 #   <App>.app/Frameworks/*.framework  every binary extension module, repackaged as a framework
 #                                     because iOS refuses to load a bare .so from an app bundle
 #

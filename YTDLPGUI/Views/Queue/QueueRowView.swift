@@ -11,7 +11,7 @@ struct QueueRowView: View {
                 url: item.thumbnailURL,
                 width: 96,
                 height: 54,
-                placeholderSymbol: item.options.kind.symbolName
+                placeholderSymbol: item.options.backend == .galleryDL ? "photo.stack" : item.options.kind.symbolName
             )
             .padding(.top, 2)
 
@@ -55,6 +55,10 @@ struct QueueRowView: View {
                 .imageScale(.small)
                 .accessibilityHidden(true)
 
+            if item.options.backend == .galleryDL, item.completedItemCount > 0 {
+                Text("\(item.completedItemCount) files")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
             Text(item.phase.displayName)
                 .font(.callout)
                 .foregroundStyle(phaseColor)
@@ -137,7 +141,7 @@ struct QueueRowView: View {
         HStack(spacing: 4) {
             if item.canRevealInFinder, let url = item.outputURL {
                 iconButton("Reveal in Finder", "magnifyingglass") {
-                    FinderIntegration.reveal(url)
+                    FinderIntegration.reveal(item.outputURLs.isEmpty ? [url] : item.outputURLs)
                 }
             }
             if item.canRetry {

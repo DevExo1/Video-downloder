@@ -36,6 +36,9 @@ extension ArgumentBuilder {
         options: DownloadOptions,
         capabilities: EmbeddedEngineCapabilities
     ) -> [String] {
+        if options.backend == .galleryDL {
+            return [GalleryDLArguments.embeddedMarker] + GalleryDLArguments.download(url: url, options: options, embedded: true)
+        }
         var arguments: [String] = []
 
         arguments += configurationArguments(for: options)

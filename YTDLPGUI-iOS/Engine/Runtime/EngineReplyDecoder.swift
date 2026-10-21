@@ -23,7 +23,8 @@ enum EngineReplyDecoder {
             ytdlpSource: EngineJSON.string(reply["yt_dlp_source"]).flatMap(YTDLPSource.init(rawValue:)) ?? .bundled,
             ejsVersion: EngineJSON.nonEmptyString(reply["ejs"]),
             certifiVersion: EngineJSON.nonEmptyString(reply["certifi"]),
-            updateError: EngineJSON.nonEmptyString(reply["update_error"])
+            updateError: EngineJSON.nonEmptyString(reply["update_error"]),
+            galleryDLVersion: EngineJSON.nonEmptyString(reply["gallery_dl"])
         )
     }
 

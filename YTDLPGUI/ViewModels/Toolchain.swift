@@ -7,6 +7,7 @@ import Observation
 final class Toolchain {
 
     private(set) var ytdlp: ToolStatus = .missing(.ytdlp)
+    private(set) var galleryDL: ToolStatus = .missing(.galleryDL)
     private(set) var ffmpeg: ToolStatus = .missing(.ffmpeg)
     private(set) var isRefreshing = false
     private(set) var hasCompletedFirstCheck = false
@@ -25,7 +26,17 @@ final class Toolchain {
     }
 
     /// True once the required tool is present and the app can actually download something.
-    var isReady: Bool { ytdlp.isInstalled }
+    var isReady: Bool { ytdlp.isInstalled || galleryDL.isInstalled }
+
+    func isReady(for backend: DownloadBackend) -> Bool {
+        backend == .galleryDL ? galleryDL.isInstalled : ytdlp.isInstalled
+    }
+
+    func service(for backend: DownloadBackend) -> YTDLPService? {
+        if backend == .ytdlp { return service }
+        guard let executableURL = galleryDL.executableURL else { return nil }
+        return YTDLPService(executableURL: executableURL, ffmpegURL: nil, backend: .galleryDL)
+    }
 
     /// ffmpeg is optional but almost always needed in practice.
     var canMergeStreams: Bool { ffmpeg.isInstalled }
@@ -61,6 +72,11 @@ final class Toolchain {
             userSelectedPath: settings.ffmpegPathOverride.isEmpty ? nil : settings.ffmpegPathOverride
         )
 
+        async let galleryStatus = ToolLocator.status(
+            for: .galleryDL,
+            userSelectedPath: settings.galleryDLPathOverride.isEmpty ? nil : settings.galleryDLPathOverride
+        )
+        galleryDL = await galleryStatus
         ytdlp = await ytdlpStatus
         ffmpeg = await ffmpegStatus
     }
@@ -70,6 +86,7 @@ final class Toolchain {
     func setExecutablePath(_ path: String, for tool: ExternalTool) async {
         switch tool {
         case .ytdlp: settings.ytdlpPathOverride = path
+        case .galleryDL: settings.galleryDLPathOverride = path
         case .ffmpeg: settings.ffmpegPathOverride = path
         }
         await refresh()
@@ -78,6 +95,7 @@ final class Toolchain {
     func resetExecutablePath(for tool: ExternalTool) async {
         switch tool {
         case .ytdlp: settings.ytdlpPathOverride = ""
+        case .galleryDL: settings.galleryDLPathOverride = ""
         case .ffmpeg: settings.ffmpegPathOverride = ""
         }
         await refresh()
@@ -86,6 +104,7 @@ final class Toolchain {
     func status(for tool: ExternalTool) -> ToolStatus {
         switch tool {
         case .ytdlp: ytdlp
+        case .galleryDL: galleryDL
         case .ffmpeg: ffmpeg
         }
     }

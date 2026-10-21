@@ -33,6 +33,12 @@ PYTHON_SUPPORT_SHA256="b591f3301bd22a4f423c49c746cac9e55558b909fd14d6eb8327ccc62
 # Pure-Python wheels, unpacked into Vendor/python-packages and copied into the app bundle.
 # Format: "<wheel file name>|<url>|<sha256>"
 WHEELS=(
+    # gallery-dl (GPL-2.0-only), Requests (Apache-2.0) and pure-Python dependencies.
+    "gallery_dl-1.32.17-py3-none-any.whl|https://files.pythonhosted.org/packages/50/2f/10d3f717e3dc38688ce07424652d7e6c5f606d8b7644af4c16e0dc016527/gallery_dl-1.32.17-py3-none-any.whl|f88ddeb788506f33385e541dbbfba57376ed04bbf6f3f635249a9dd3a78930ed"
+    "requests-2.34.2-py3-none-any.whl|https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl|2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0"
+    "urllib3-2.8.0-py3-none-any.whl|https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl|0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3"
+    "charset_normalizer-3.5.2-py3-none-any.whl|https://files.pythonhosted.org/packages/fc/ad/d07d7862a62ffa6d79d68074d14823243dd235a77c45262acbf6adeb28bf/charset_normalizer-3.5.2-py3-none-any.whl|b6b751274acb69d77b3323d6b7dbaa3c7fdfc1eb829b7eb61d262f32e1af9685"
+    "idna-3.20-py3-none-any.whl|https://files.pythonhosted.org/packages/58/a2/bb081bab032533a855d44de1d56f8e8426114ff1ba5d1f07a438a0a654f8/idna-3.20-py3-none-any.whl|ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c"
     # yt-dlp itself (Unlicense).
     "yt_dlp-2026.8.19-py3-none-any.whl|https://files.pythonhosted.org/packages/69/b2/8cd1613f56eed7ceb64fbd4df3f1c01246bfb098e6f398228bafda22b80b/yt_dlp-2026.8.19-py3-none-any.whl|1d57897e94c6665a0a6f9bc54b34e584284e32c034ffab3a7df25d8f7b24eedf"
     # YouTube's JavaScript challenge solver scripts (Unlicense AND MIT AND ISC). The app runs

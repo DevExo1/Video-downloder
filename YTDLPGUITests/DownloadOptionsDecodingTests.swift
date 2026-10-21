@@ -14,6 +14,9 @@ struct DownloadOptionsDecodingTests {
 
     /// One change per stored property, each away from its default.
     private static let changes: [(key: String, apply: @Sendable (inout DownloadOptions) -> Void)] = [
+        ("backend", { $0.backend = .galleryDL }),
+        ("galleryFilename", { $0.galleryFilename = "{id}.{extension}" }),
+        ("galleryRange", { $0.galleryRange = "1-20" }),
         ("kind", { $0.kind = .audio }),
         ("videoQuality", { $0.videoQuality = .hd720 }),
         ("container", { $0.container = .mkv }),

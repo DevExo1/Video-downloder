@@ -417,7 +417,7 @@ final class DownloadQueue {
             capabilities: capabilities
         )
         // Logs get shared in bug reports, so secrets are masked here; the engine gets the real argv.
-        item.log.append("$ " + ShellQuoting.commandLine(executable: "yt-dlp", arguments: ShellQuoting.redactingSecrets(argv)))
+        item.log.append("$ " + ShellQuoting.commandLine(executable: options.backend.rawValue, arguments: ShellQuoting.redactingSecrets(argv.filter { $0 != GalleryDLArguments.embeddedMarker })))
 
         let jobID = UUID()
         jobIDs[item.id] = jobID
@@ -659,7 +659,7 @@ final class DownloadQueue {
         }
 
         if failure == nil {
-            decidePhotoEligibility(of: item, thenSave: settings.saveVideosToPhotos && item.options.kind == .video)
+            decidePhotoEligibility(of: item, thenSave: settings.saveVideosToPhotos && item.options.backend == .ytdlp && item.options.kind == .video)
         }
     }
 

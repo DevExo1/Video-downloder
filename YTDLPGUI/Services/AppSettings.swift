@@ -113,6 +113,10 @@ final class AppSettings {
         didSet { defaults.set(ytdlpPathOverride, forKey: Key.ytdlpPath) }
     }
 
+    var galleryDLPathOverride: String {
+        didSet { defaults.set(galleryDLPathOverride, forKey: "galleryDLPath") }
+    }
+
     var ffmpegPathOverride: String {
         didSet { defaults.set(ffmpegPathOverride, forKey: Key.ffmpegPath) }
     }
@@ -149,6 +153,7 @@ final class AppSettings {
         playSoundWhenComplete = defaults.object(forKey: Key.playSoundWhenComplete) as? Bool ?? true
         appearance = AppearanceMode(rawValue: defaults.string(forKey: Key.appearance) ?? "") ?? .system
         ytdlpPathOverride = defaults.string(forKey: Key.ytdlpPath) ?? ""
+        galleryDLPathOverride = defaults.string(forKey: "galleryDLPath") ?? ""
         ffmpegPathOverride = defaults.string(forKey: Key.ffmpegPath) ?? ""
         showCommandPreview = defaults.object(forKey: Key.showCommandPreview) as? Bool ?? false
         confirmBeforeClearingHistory = defaults.object(forKey: Key.confirmBeforeClearingHistory) as? Bool ?? true

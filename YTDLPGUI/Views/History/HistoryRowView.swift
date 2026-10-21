@@ -9,7 +9,7 @@ struct HistoryRowView: View {
                 url: entry.thumbnailURL,
                 width: 80,
                 height: 45,
-                placeholderSymbol: entry.kind.symbolName
+                placeholderSymbol: entry.options?.backend == .galleryDL ? "photo.stack" : entry.kind.symbolName
             )
             .padding(.top, 2)
             .opacity(entry.succeeded ? 1 : 0.55)
@@ -102,7 +102,7 @@ struct HistoryRowView: View {
         HStack(spacing: 4) {
             if entry.fileExists, let url = entry.outputURL {
                 iconButton("Reveal in Finder", "magnifyingglass") {
-                    FinderIntegration.reveal(url)
+                    FinderIntegration.reveal(entry.outputURLs.isEmpty ? [url] : entry.outputURLs)
                 }
             }
             iconButton("Copy source URL", "link") {

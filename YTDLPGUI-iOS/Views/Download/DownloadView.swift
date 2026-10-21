@@ -17,18 +17,31 @@ struct DownloadView: View {
             Form {
                 ScreenIntroduction(
                     eyebrow: "YTDLP GUI", title: "Make it yours.",
-                    detail: "Your favourite video and audio, saved in one place.",
+                    detail: "Your favourite videos, audio and galleries, saved in one place.",
                     symbol: "arrow.down.right.circle"
                 )
+                Section("Downloader") {
+                    DownloaderPicker(options: Binding(get: { composer.options }, set: { composer.options = $0 }))
+                }
+                .mobileCardRow()
                 LinkSection(isFieldFocused: $isLinkFieldFocused)
-                AnalysisSection()
+                if composer.options.backend == .ytdlp {
+                    AnalysisSection()
+                        .mobileCardRow()
+                    ModeSection()
+                        .mobileCardRow()
+                } else {
+                    Section("Gallery") {
+                        GalleryOptionsFields(options: Binding(get: { composer.options }, set: { composer.options = $0 }))
+                    }
                     .mobileCardRow()
-                ModeSection()
-                    .mobileCardRow()
+                }
                 AdvisoriesSection()
                     .mobileCardRow()
-                advancedOptionsSection
-                    .mobileCardRow()
+                if composer.options.backend == .ytdlp {
+                    advancedOptionsSection
+                        .mobileCardRow()
+                }
                 if model.settings.showCommandPreview {
                     CommandPreviewSection()
                         .mobileCardRow()
@@ -211,7 +224,7 @@ private struct CommandPreviewSection: View {
         } header: {
             Text("Command Preview")
         } footer: {
-            Text("yt-dlp runs inside the app rather than in a shell, so the quoting is only for readability. Passwords, codes and proxy credentials are shown as PRIVATE, here and in download logs. The app also connects its own progress reporting and processing, which isn't shown.")
+            Text("\(model.composer.options.backend.displayName) runs inside the app rather than in a shell, so the quoting is only for readability. Passwords, codes and proxy credentials are shown as PRIVATE, here and in download logs. The app also connects its own progress reporting and processing, which isn't shown.")
         }
     }
 }
