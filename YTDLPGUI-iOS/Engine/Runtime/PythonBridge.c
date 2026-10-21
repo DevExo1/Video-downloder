@@ -1,5 +1,8 @@
 #define PY_SSIZE_T_CLEAN
-#include <Python/Python.h>
+
+// The Python header directory is a system search path: CPython's portable headers use
+// quoted includes internally, including when BeeWare packages them as an Apple framework.
+#include <Python.h>
 
 #include <stdatomic.h>
 #include <stdio.h>
