@@ -1,0 +1,57 @@
+import SwiftUI
+
+/// One finished or failed download in the history.
+struct HistoryRowView: View {
+    let entry: HistoryEntry
+    /// From `HistoryStore.isFileMissing`, so drawing the row never touches the file system.
+    var isFileMissing = false
+
+    var body: some View {
+        ThumbnailRowLayout(thumbnailWidth: 96) {
+            ThumbnailView(url: entry.thumbnailURL, placeholderSymbol: entry.options?.backend == .galleryDL ? "photo.stack" : entry.kind.symbolName, cornerRadius: 12)
+                .opacity(entry.succeeded ? 1 : 0.6)
+        } content: {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(entry.title)
+                    .font(.headline)
+                    .lineLimit(2)
+
+                Text(entry.summaryLine)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                    .lineLimit(2)
+
+                if !entry.succeeded {
+                    Label(entry.failureTitle ?? "Download failed", systemImage: "exclamationmark.triangle.fill")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(.red)
+                } else if isFileMissing {
+                    Label("File moved or deleted", systemImage: "questionmark.folder")
+                        .font(.footnote)
+                        .foregroundStyle(.orange)
+                }
+            }
+        }
+        .padding(.vertical, 10)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(entry.title)
+        .accessibilityValue(entry.accessibilityStatus(isFileMissing: isFileMissing))
+    }
+}
+
+extension HistoryEntry {
+    /// When, in what format, and how big: "2 hr ago · 1080p · 48.2 MB".
+    var summaryLine: String {
+        var parts = [Format.relativeDate(date), formatSummary]
+        if let size = Format.bytes(fileSizeBytes) { parts.append(size) }
+        return parts.joined(separator: " · ")
+    }
+
+    func accessibilityStatus(isFileMissing: Bool) -> String {
+        var parts = [succeeded ? "Downloaded" : "Failed", summaryLine]
+        if !succeeded, let failureTitle { parts.append(failureTitle) }
+        if isFileMissing { parts.append("File moved or deleted") }
+        return parts.joined(separator: ", ")
+    }
+}

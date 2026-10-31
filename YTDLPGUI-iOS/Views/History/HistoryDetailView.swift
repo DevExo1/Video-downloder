@@ -1,0 +1,158 @@
+import QuickLook
+import SwiftUI
+
+/// One history entry in full, with everything that can be done with it.
+struct HistoryDetailView: View {
+    let entryID: HistoryEntry.ID
+
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var previewFiles: [URL] = []
+    @State private var photoError: String?
+    /// The files Photos can take, worked out off the main actor when the screen appears.
+    @State private var photoFiles: [URL]?
+    /// Keeps the entry on screen while the view animates away after it was removed.
+    @State private var retainedEntry: HistoryEntry?
+
+    private var entry: HistoryEntry? {
+        model.history.entries.first { $0.id == entryID } ?? retainedEntry
+    }
+
+    /// The entry's files still on disk, as `HistoryStore` last checked.
+    private var existingFiles: [URL] {
+        entry.map { model.history.existingFiles(of: $0) } ?? []
+    }
+
+    var body: some View {
+        Group {
+            if let entry {
+                list(for: entry)
+                    .navigationTitle(entry.title)
+            } else {
+                ContentUnavailableView(
+                    "Removed from History",
+                    systemImage: "clock.arrow.circlepath",
+                    description: Text("This download is no longer in the history.")
+                )
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .quickLookFiles($previewFiles)
+        .modifier(PhotoSaveErrorAlert(errorMessage: $photoError))
+        .onAppear {
+            retainedEntry = model.history.entries.first { $0.id == entryID }
+        }
+        .task(id: existingFiles) {
+            photoFiles = await MediaLibrary.photosCompatibleFiles(among: existingFiles)
+        }
+    }
+
+    private func list(for entry: HistoryEntry) -> some View {
+        let files = entry.outputURLs
+        let status = model.history.fileStatus[entry.id]
+        let existingFiles = status?.existingURLs ?? []
+        return List {
+            Section {
+                header(for: entry)
+            }
+            .listRowBackground(MobileTheme.surface)
+
+            if !entry.succeeded {
+                Section("Problem") {
+                    Label {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(entry.failureTitle ?? "Download failed")
+                                .font(.headline)
+                            if let detail = entry.failureDetail {
+                                Text(detail)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                            }
+                        }
+                    } icon: {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                    }
+                }
+                .listRowBackground(MobileTheme.surface)
+            }
+
+            Section("Details") {
+                LabeledContent("Date", value: Format.absoluteDate(entry.date))
+                LabeledContent("Format", value: entry.formatSummary)
+                if let size = Format.bytes(entry.fileSizeBytes) {
+                    LabeledContent("Size", value: size)
+                }
+                if let duration = Format.duration(entry.durationSeconds) {
+                    LabeledContent("Length", value: duration)
+                }
+                if files.count <= 1, let name = entry.fileName {
+                    LabeledContent("File") {
+                        Text(name)
+                            .multilineTextAlignment(.trailing)
+                            .textSelection(.enabled)
+                    }
+                }
+                if entry.succeeded, let status, let warning = MissingFiles.warning(missing: status.missingCount, of: status.recordedCount) {
+                    WarningRow(message: warning + " Download again to get a new copy.")
+                }
+                LabeledContent("Link") {
+                    Text(URLDetection.displayString(for: entry.sourceURL))
+                        .lineLimit(2)
+                        .truncationMode(.middle)
+                        .multilineTextAlignment(.trailing)
+                        .textSelection(.enabled)
+                }
+            }
+            .listRowBackground(MobileTheme.surface)
+
+            if files.count > 1 {
+                Section("Files (\(files.count))") {
+                    ForEach(files, id: \.self) { file in
+                        FileNameRow(url: file, isMissing: status != nil && !existingFiles.contains(file))
+                    }
+                }
+                .listRowBackground(MobileTheme.surface)
+            }
+
+            Section {
+                HistoryEntryActionItems(
+                    entry: entry,
+                    photoFiles: photoFiles,
+                    onOpen: { previewFiles = $0 },
+                    onSaveToPhotos: saveToPhotos,
+                    onDelete: {
+                        dismiss()
+                        model.history.remove(entry)
+                    }
+                )
+            }
+            .listRowBackground(MobileTheme.surface)
+        }
+        .readableContentWidth()
+    }
+
+    private func header(for entry: HistoryEntry) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ThumbnailView(url: entry.thumbnailURL, placeholderSymbol: entry.kind.symbolName, cornerRadius: 12)
+                .frame(maxWidth: 480)
+            Text(entry.title)
+                .font(.title3.weight(.semibold))
+                .textSelection(.enabled)
+            Label(
+                entry.succeeded ? "Downloaded" : "Failed",
+                systemImage: entry.succeeded ? "checkmark.circle.fill" : "exclamationmark.triangle.fill"
+            )
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(entry.succeeded ? .green : .red)
+        }
+        .padding(.vertical, 6)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func saveToPhotos(_ files: [URL]) {
+        saveHistoryFilesToPhotos(files, model: model, errorMessage: $photoError)
+    }
+}
