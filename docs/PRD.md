@@ -1,6 +1,7 @@
 # PRD: Video Saver for iPhone (private)
 
-Status: Draft v0.3 · Owner: devexo1
+Status: Draft v0.4 · Owner: devexo1
+v0.4: v1 is a fork of the MIT-licensed open-source app PopShark57/ytdlp-gui (see PLAN.md).
 Changes from v0.2: **iOS only**, **no server**, everything runs on the phone. Android is deferred.
 
 ## 1. Summary
@@ -46,7 +47,7 @@ A private iPhone app: the user pastes a YouTube URL, taps Save, and the video is
 | F13 | Quality choice (1080p / 720p / 480p) | P2 |
 
 ## 7. Non-functional requirements
-- iOS 17+ (iOS 26+ for extended background downloading, F12).
+- iOS 18+ (required by the base app; iOS 26+ for extended background downloading, F12).
 - Native Swift/SwiftUI app; no server, no analytics, no data leaves the phone except requests to YouTube.
 - A 10-minute 1080p video should save in roughly the time the network allows (no real-time playback needed).
 - App size target < 120 MB (embedded Python runtime is the bulk).
