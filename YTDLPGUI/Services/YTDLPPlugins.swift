@@ -73,5 +73,5 @@ enum YTDLPPlugins {
         return components.isEmpty ? nil : Array(components)
     }
 
-    private static let logger = Logger(subsystem: "io.github.ytdlpgui.YTDLPGUI", category: "plugins")
+    private static let logger = Logger(subsystem: "com.devexo1.ytdlpgui.YTDLPGUI", category: "plugins")
 }

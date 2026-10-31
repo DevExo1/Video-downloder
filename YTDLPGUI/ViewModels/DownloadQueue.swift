@@ -19,7 +19,7 @@ final class DownloadQueue {
     private let toolchain: Toolchain
     private let history: HistoryStore
     private let notifications: NotificationService
-    private let logger = Logger(subsystem: "io.github.ytdlpgui.YTDLPGUI", category: "queue")
+    private let logger = Logger(subsystem: "com.devexo1.ytdlpgui.YTDLPGUI", category: "queue")
 
     /// Live processes, keyed by item id. Kept out of `DownloadItem` so the model stays a plain
     /// value-ish object that SwiftUI can diff cheaply.

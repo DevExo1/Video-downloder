@@ -11,7 +11,7 @@ import Foundation
 /// (`InboxWriter`) and the reader (`SharedLinkInbox`) can't drift apart.
 enum ShareInboxFormat {
 
-    static let appGroupIdentifier = "group.io.github.ytdlpgui.YTDLPGUI"
+    static let appGroupIdentifier = "group.com.devexo1.ytdlpgui.YTDLPGUI"
 
     /// The only format version there is.
     static let formatVersion = 1

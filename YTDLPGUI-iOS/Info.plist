@@ -4,13 +4,13 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>io.github.ytdlpgui.YTDLPGUI.iOS.downloads.*</string>
+		<string>com.devexo1.ytdlpgui.YTDLPGUI.iOS.downloads.*</string>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>io.github.ytdlpgui.YTDLPGUI.iOS</string>
+			<string>com.devexo1.ytdlpgui.YTDLPGUI.iOS</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>ytdlpgui</string>

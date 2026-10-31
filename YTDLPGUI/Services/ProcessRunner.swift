@@ -136,7 +136,7 @@ final class ProcessSession: @unchecked Sendable {
     private var cancelRequested = false
     private var hasStarted = false
 
-    private static let logger = Logger(subsystem: "io.github.ytdlpgui.YTDLPGUI", category: "process")
+    private static let logger = Logger(subsystem: "com.devexo1.ytdlpgui.YTDLPGUI", category: "process")
 
     init(configuration: ProcessConfiguration) {
         self.configuration = configuration

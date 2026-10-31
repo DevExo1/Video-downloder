@@ -55,7 +55,7 @@ final class SampleTransfer: @unchecked Sendable {
     init(from source: any SampleSource, to input: AVAssetWriterInput, label: String) {
         self.source = source
         self.input = input
-        queue = DispatchQueue(label: "io.github.ytdlpgui.media.\(label)")
+        queue = DispatchQueue(label: "com.devexo1.ytdlpgui.media.\(label)")
     }
 
     /// Feeds the input until the source runs dry, the writer fails, or `cancel` is called.

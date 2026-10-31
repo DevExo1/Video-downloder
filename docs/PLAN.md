@@ -26,8 +26,8 @@ So v1 = **our fork, built and installed as-is**. We only write code where it fal
 ## 2. Milestones
 | # | Milestone | What happens | Est. |
 |---|-----------|--------------|------|
-| M0 | **Fork** | Fork into `devexo1` on GitHub; add `upstream` remote; this repo keeps our docs (or move them into the fork) | 0.5 d |
-| M1 | **Build & install as-is** | On a Mac: `./Tools/fetch-ios-dependencies.sh` → open `YTDLPGUI.xcodeproj` → scheme `YTDLPGUI-iOS` → set your Team → run on your iPhone | 0.5-1 d |
+| M0 | **Import** ✅ | Upstream code merged into this repo (history kept, `upstream` remote), team set, bundle IDs moved to `com.devexo1.ytdlpgui.*` | done |
+| M1 | **Build & install as-is** | Follow [SETUP-MAC.md](SETUP-MAC.md) on your Mac | 0.5-1 d |
 | M2 | **Acceptance test against PRD** | Run the checklist in §3 on a real iPhone; record what passes, fails, or is missing | 1 d |
 | M3 | **Gap list → backlog** | Turn failures/missing items into issues, prioritised (P0 first) | 0.5 d |
 | M4+ | **Extend** | Implement only the gaps we need (examples in §4), one small PR each | as needed |

@@ -2,14 +2,14 @@ import Foundation
 import os
 
 /// The app's loggers, all under one subsystem: the bundle identifier of the app that is
-/// running. `log stream --predicate 'subsystem == "io.github.ytdlpgui.YTDLPGUI.iOS"'` then shows
+/// running. `log stream --predicate 'subsystem == "com.devexo1.ytdlpgui.YTDLPGUI.iOS"'` then shows
 /// everything the iOS app says, one category per area.
 ///
 /// Links and file names are logged with `privacy: .private`; identifiers, states and counts are
 /// public, so a report from a device still shows what happened to which download.
 enum AppLog {
 
-    static let subsystem = Bundle.main.bundleIdentifier ?? "io.github.ytdlpgui.YTDLPGUI"
+    static let subsystem = Bundle.main.bundleIdentifier ?? "com.devexo1.ytdlpgui.YTDLPGUI"
 
     /// Starting the embedded engine, its jobs and updates.
     static let engine = Logger(subsystem: subsystem, category: "engine")
