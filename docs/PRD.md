@@ -1,89 +1,72 @@
-# PRD: Video Downloader (React Native, Android + iOS, private)
+# PRD: Video Saver for iPhone (private)
 
-Status: Draft v0.2 · Owner: devexo1
-Changes from v0.1: cross-platform (React Native), private distribution, server-assisted architecture.
+Status: Draft v0.3 · Owner: devexo1
+Changes from v0.2: **iOS only**, **no server**, everything runs on the phone. Android is deferred.
 
 ## 1. Summary
-A private phone app (Android + iPhone) where the user pastes a YouTube URL, downloads the video to the device, and later plays it. Two areas: **Home** (URL input) and **Library** (Downloading / Downloaded tabs). Extraction is done by a small self-hosted backend; the phone app downloads the finished file from it.
+A private iPhone app: the user pastes a YouTube URL, taps Save, and the video is downloaded onto the phone. Saved videos appear in a list and play in the iPhone's native video player. All work happens on-device; there is no backend.
 
 ## 2. Goals
-- Paste a URL, see title/thumbnail/duration, pick a quality, tap Download.
-- Live progress for active downloads, with cancel/retry.
-- Downloaded list; tapping an item opens the video in the phone's native player experience (see §7 for the iOS difference).
-- Downloads continue in the background where the OS allows.
-- Single TypeScript codebase for both platforms.
+- Paste a URL → Save → video file on the phone. That is the core.
+- See what is downloading and what is saved.
+- Tap a saved video to play it (native iOS player); optionally save it to Photos or Files.
+- Keep working when YouTube changes things, by updating the download engine without rebuilding the app.
 
 ## 3. Non-goals (v1)
-- Public App Store / Google Play release (private distribution only).
-- Multi-user accounts, payments, ads, analytics.
-- Age-restricted, private, DRM or paid content; YouTube sign-in.
-- In-app player (v1 hands off to the OS).
-- Sites other than YouTube in the UI (backend supports more).
+- Android (later; the engine choice below also exists for Android).
+- App Store release.
+- Playlists, channels, audio-only, subtitles, sign-in, age-restricted/private/paid videos.
+- Any server or cloud component.
 
 ## 4. Users and distribution
-- Users: the owner and a small invited group (family/friends). Order of tens of users, not thousands.
-- **Android:** signed APK sideload (or internal link).
-- **iOS:** TestFlight (up to 10,000 testers, builds expire every 90 days; needs paid Apple Developer account, $99/yr) or Ad Hoc (up to 100 registered devices/yr, no expiry per build beyond the profile year). Enterprise distribution is not appropriate for friends/family use.
+- The owner and a few people they trust. Sideloaded, not public.
+- Install options (pick one, see PLAN §6): paid Apple Developer account direct install (1-year profile) · TestFlight internal testers · free Apple ID (re-sign every 7 days).
 
 ## 5. User stories
-1. Paste a YouTube link (or Share → app) and see a preview.
-2. Pick quality (1080p/720p/480p/audio-only) and start the download.
-3. See progress, speed, ETA; cancel or retry.
-4. Open the Downloaded tab and tap a video to play it.
-5. Delete a downloaded video.
-6. First launch: enter server URL + access token once.
+1. I paste a YouTube link (or share it from the YouTube app) and tap **Save**.
+2. I see it in **Downloading** with progress, and can cancel.
+3. When finished it moves to **Saved**; I tap it and it plays.
+4. I can delete it, or export it to Photos / Files.
 
 ## 6. Functional requirements
 | ID | Requirement | Pri |
 |----|-------------|-----|
-| F1 | URL input with paste button; validate youtube.com / youtu.be / shorts / music links | P0 |
-| F2 | Preview via backend `/info` (title, thumbnail, duration, formats) | P0 |
-| F3 | Quality picker; default best ≤1080p MP4 (H.264/AAC for universal playback) | P0 |
-| F4 | Job flow: app requests job → backend downloads/merges → app downloads the file → file saved on device | P0 |
-| F5 | Library with **Downloading** tab (server-side preparing + device transfer progress, cancel/retry) and **Downloaded** tab (thumbnail, title, size, duration) | P0 |
-| F6 | Tap downloaded item → open in native player (Android: system default via `ACTION_VIEW`; iOS: see §7) | P0 |
-| F7 | Persistent library (local DB) surviving restarts | P0 |
-| F8 | Backend auth via static bearer token over HTTPS | P0 |
-| F9 | Delete item (file + record), long-press/swipe | P1 |
-| F10 | Resume interrupted transfers (HTTP Range) | P1 |
-| F11 | Share-sheet intake (Android intent filter, iOS Share Extension) | P1 |
-| F12 | Background transfer continues when app is backgrounded | P1 |
-| F13 | Audio-only option | P2 |
-| F14 | Server auto-delete of finished files after N hours | P1 |
+| F1 | URL field + Paste button; accept youtube.com, youtu.be, shorts, m.youtube.com links | P0 |
+| F2 | Save button: fetch info + download best MP4 up to 1080p (H.264 + AAC so iOS plays it natively) | P0 |
+| F3 | Merge separate video and audio streams on-device into one .mp4 | P0 |
+| F4 | **Downloads** screen with two tabs: *Downloading* (title, progress %, cancel) and *Saved* (thumbnail, title, duration, size) | P0 |
+| F5 | Tap a saved video → full-screen native iOS player | P0 |
+| F6 | Saved files persist across app restarts (app Documents folder, visible in the Files app) | P0 |
+| F7 | Delete a saved video | P0 |
+| F8 | Clear error messages: invalid link, no internet, video unavailable, engine needs update | P0 |
+| F9 | "Update engine" action: downloads the latest yt-dlp release into the app | P0 |
+| F10 | Share sheet: "Share → Video Saver" from the YouTube app | P1 |
+| F11 | Export to Photos / Save to Files | P1 |
+| F12 | Keep downloading for a while after the app is backgrounded | P1 |
+| F13 | Quality choice (1080p / 720p / 480p) | P2 |
 
-## 7. Platform differences (important)
-- **Android:** save to `Movies/VideoDownloader` via MediaStore; tap launches `ACTION_VIEW` with a `content://` URI → true system default player.
-- **iOS has no "default video player" setting.** Options, chosen in this order:
-  1. Save to the **Photos library** (needs add-only permission) and open with the system **QuickLook / share sheet** ("Open in VLC", "Save to Files", etc.). **Recommended:** tap shows QuickLook preview (native full-screen player) with a share button.
-  2. Alternative: present the iOS share sheet / "Open in…" directly.
-  This is the closest equivalent; the PRD requirement "opens in default player" is satisfied on Android literally and on iOS via the native player + share sheet.
-- iOS background downloads are managed by the OS (background URLSession); they can be delayed and the app is not guaranteed to run. Android uses a foreground service for reliability.
+## 7. Non-functional requirements
+- iOS 17+ (iOS 26+ for extended background downloading, F12).
+- Native Swift/SwiftUI app; no server, no analytics, no data leaves the phone except requests to YouTube.
+- A 10-minute 1080p video should save in roughly the time the network allows (no real-time playback needed).
+- App size target < 120 MB (embedded Python runtime is the bulk).
 
-## 8. Non-functional requirements
-- Android 8+ (API 26); iOS 16+.
-- React Native (TypeScript), new architecture; **Expo with development builds** (not Expo Go, native modules needed).
-- Backend: Docker container (yt-dlp + ffmpeg + small HTTP API), HTTPS, token auth, rate limiting.
-- No analytics; data stays between the phone and the owner's server.
-- Crash-free sessions ≥ 99%; ≥ 90% of valid public URLs download successfully.
+## 8. How it works (plain language)
+yt-dlp is the most actively maintained YouTube downloader. It is written in Python. iPhones can't run separate programs, but since Python 3.13, Python is officially supported as a library **inside** an iOS app. So the app bundles Python and yt-dlp and calls them directly. The pieces yt-dlp normally borrows from the computer are replaced with what iOS already has:
+- **JavaScript** (YouTube's anti-bot puzzles) → Apple's built-in JavaScriptCore.
+- **ffmpeg** (joining video + audio) → Apple's AVFoundation.
+An open-source iOS app already does exactly this and passed live YouTube tests in September 2026 ([PopShark57/ytdlp-gui PR #3](https://github.com/PopShark57/ytdlp-gui/pull/3)), so this is proven, not theoretical.
 
-## 9. Architecture decision: why a backend
-On Android, yt-dlp can run on-device (`youtubedl-android`). On iOS there is no maintained, App-Store-quality way to run yt-dlp (needs embedded Python + ffmpeg, no JIT, no subprocesses). To get one codebase on both platforms, extraction and merging run on a **server the owner controls**, and both apps behave identically as thin clients. Side benefits: fix YouTube breakage by updating one container, not two apps.
+Why this lasts: when YouTube changes, the yt-dlp team typically ships a fix within days. Because yt-dlp is Python code, the app can download the new version and use it immediately, with no rebuild.
 
-Trade-offs the owner accepts:
-- Requires a running server (cost/uptime). A **home server or residential IP** works best; cloud datacenter IPs are often challenged or blocked by YouTube (bot checks / PO-token requirements).
-- Traffic goes phone → server → phone (server bandwidth matters).
-- Server holds the legal exposure of fetching content (see §10).
+## 9. Risks
+1. **Terms of Service / copyright.** YouTube's Terms forbid downloading outside its own features. Private use doesn't change that. Only save content you have the right to keep; the app shows this on first launch.
+2. **YouTube anti-bot changes** (PO tokens, JavaScript challenges). Mitigated by the in-app engine update; may occasionally need app-side changes too.
+3. **Distribution friction.** Free Apple ID installs expire every 7 days; paid account ($99/yr) gives 1-year installs.
+4. **Background limits.** iOS may pause downloads when the app is in the background on older iOS versions.
+5. **Young ecosystem.** The JavaScriptCore and AVFoundation replacements are newer and less battle-tested than the desktop setup.
 
-## 10. Risks and constraints
-1. **Terms of Service / copyright.** YouTube's Terms prohibit downloading except via provided features. Private use limits visibility but doesn't remove the issue. Only download content you have rights to; include a first-run notice. Keep the app and server private and non-commercial.
-2. **Store policy.** Public App Store / Play listing would be rejected; that is why distribution is private (TestFlight/Ad Hoc/APK). TestFlight external testing still goes through Apple beta review, so keep the app generic ("personal media saver") and honest; internal testers (up to 100 App Store Connect users) skip review.
-3. **Extractor breakage.** No official API; PO tokens, SABR and JS-runtime requirements change often. Mitigation: pinned + auto-updating yt-dlp in the container, canary job, PO-token provider sidecar if needed. ([yt-dlp PO Token Guide](https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide))
-4. **iOS 90-day TestFlight expiry** → rebuild and re-upload quarterly (automate with EAS).
-5. **iOS storage:** large files in Photos/Files; need disk-space checks.
-6. **Server security:** exposed endpoint that fetches arbitrary URLs → restrict to YouTube hosts, token auth, rate limit, no open proxy behavior.
-
-## 11. Open questions
-- Where will the server run (home machine, VPS, Raspberry Pi)? Affects IP-blocking risk.
-- iOS distribution: TestFlight (simplest) or Ad Hoc? Do you already have an Apple Developer account?
-- Is the iOS "QuickLook + share sheet" answer acceptable for the "open in player" requirement?
-- Number of users / devices?
+## 10. Open questions
+- Do you have (or want) a paid Apple Developer account? It decides the install method.
+- Minimum iOS version on your phones?
+- Is 1080p the right ceiling? (Higher resolutions are usually VP9/AV1, which iPhones play less reliably.)
