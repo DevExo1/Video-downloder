@@ -32,6 +32,6 @@ It downloads the embedded Python runtime and yt-dlp, checks each file's checksum
 Run the checklist in [PLAN.md §3](PLAN.md#3-acceptance-checklist-run-in-m2) and tell me what passes and fails. Anything that goes wrong, copy the error text (or a screenshot) back to me.
 
 ## Notes
-- Bundle IDs were changed from the original author's `io.github.ytdlpgui.*` to `com.devexo1.ytdlpgui.*` (Apple IDs must be unique per team). The app is still called "YTDLP GUI"; naming is decided later.
+- Bundle IDs were changed from the original author's `io.github.ytdlpgui.*` to `com.exolutus.ytdlpgui.*` (Apple IDs must be unique per team). The app is still called "YTDLP GUI"; naming is decided later.
 - Upstream source: https://github.com/PopShark57/ytdlp-gui (MIT). Its `LICENSE` is kept at the repo root. The iOS app also bundles gallery-dl (GPL-2.0) — fine for private use; it can be removed later.
 - The installed app keeps working for a year (profile lifetime); rebuild from Xcode to renew.

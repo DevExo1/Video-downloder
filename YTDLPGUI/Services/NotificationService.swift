@@ -11,7 +11,7 @@ import os
 @MainActor
 final class NotificationService {
 
-    private let logger = Logger(subsystem: "com.devexo1.ytdlpgui.YTDLPGUI", category: "notifications")
+    private let logger = Logger(subsystem: "com.exolutus.ytdlpgui.YTDLPGUI", category: "notifications")
     private var authorizationState: AuthorizationState = .notRequested
 
     private enum AuthorizationState {

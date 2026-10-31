@@ -673,7 +673,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUI;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -701,7 +701,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUI;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -718,7 +718,7 @@
 				DEVELOPMENT_TEAM = 4BUWFMA7GQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -736,7 +736,7 @@
 				DEVELOPMENT_TEAM = 4BUWFMA7GQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -773,7 +773,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUI.iOS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUI.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -815,7 +815,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUI.iOS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUI.iOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -838,7 +838,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUI.iOSTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUI.iOSTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -859,7 +859,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUI.iOSTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUI.iOSTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -889,7 +889,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUI.iOS.Share;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUI.iOS.Share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -919,7 +919,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUI.iOS.Share;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUI.iOS.Share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -939,7 +939,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUI.iOSUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUI.iOSUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -959,7 +959,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.devexo1.ytdlpgui.YTDLPGUI.iOSUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.exolutus.ytdlpgui.YTDLPGUI.iOSUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

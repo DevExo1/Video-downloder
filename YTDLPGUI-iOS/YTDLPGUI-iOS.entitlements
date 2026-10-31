@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.devexo1.ytdlpgui.YTDLPGUI</string>
+		<string>group.com.exolutus.ytdlpgui.YTDLPGUI</string>
 	</array>
 </dict>
 </plist>

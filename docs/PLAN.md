@@ -26,7 +26,7 @@ So v1 = **our fork, built and installed as-is**. We only write code where it fal
 ## 2. Milestones
 | # | Milestone | What happens | Est. |
 |---|-----------|--------------|------|
-| M0 | **Import** ✅ | Upstream code merged into this repo (history kept, `upstream` remote), team set, bundle IDs moved to `com.devexo1.ytdlpgui.*` | done |
+| M0 | **Import** ✅ | Upstream code merged into this repo (history kept, `upstream` remote), team set, bundle IDs moved to `com.exolutus.ytdlpgui.*` | done |
 | M1 | **Build & install as-is** | Follow [SETUP-MAC.md](SETUP-MAC.md) on your Mac | 0.5-1 d |
 | M2 | **Acceptance test against PRD** | Run the checklist in §3 on a real iPhone; record what passes, fails, or is missing | 1 d |
 | M3 | **Gap list → backlog** | Turn failures/missing items into issues, prioritised (P0 first) | 0.5 d |

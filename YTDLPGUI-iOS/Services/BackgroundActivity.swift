@@ -35,7 +35,7 @@ struct QueueActivity: Equatable, Sendable {
 final class BackgroundActivity {
 
     /// Must match the wildcard entry in `BGTaskSchedulerPermittedIdentifiers` (Info.plist).
-    static let taskIdentifierPrefix = "com.devexo1.ytdlpgui.YTDLPGUI.iOS.downloads"
+    static let taskIdentifierPrefix = "com.exolutus.ytdlpgui.YTDLPGUI.iOS.downloads"
 
     /// Called when the system is about to stop background work. The queue cancels running
     /// downloads there, keeping their partial files, so they can resume later.

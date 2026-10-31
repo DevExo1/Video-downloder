@@ -175,7 +175,7 @@ private final class AudioFileJob: @unchecked Sendable {
 
     func run() async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
-            DispatchQueue(label: "com.devexo1.ytdlpgui.media.audio-file").async { [self] in
+            DispatchQueue(label: "com.exolutus.ytdlpgui.media.audio-file").async { [self] in
                 do {
                     try copySamples()
                     file.close()
