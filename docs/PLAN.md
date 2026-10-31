@@ -1,84 +1,105 @@
-# Implementation Plan: Video Downloader (Android)
+# Implementation Plan: Video Downloader (React Native + backend)
 
-See [PRD.md](PRD.md) for requirements.
+See [PRD.md](PRD.md). This replaces the v0.1 native-Android plan.
 
-## 1. Research summary
-| Question | Finding |
+## 1. Key decisions
+| Decision | Choice | Why |
+|----------|--------|-----|
+| Mobile framework | React Native + TypeScript via **Expo (dev builds + EAS Build)** | One codebase; EAS handles iOS signing/TestFlight; native modules allowed |
+| Extraction | **Self-hosted backend** running yt-dlp + ffmpeg | yt-dlp can't practically run on iOS; same behavior on both platforms |
+| Backend stack | Node (Fastify) or Python (FastAPI) in Docker | FastAPI is the natural fit: calls yt-dlp as a library; Node is fine if you prefer one language. **Recommend FastAPI.** |
+| Transfer | Backend serves finished file over HTTPS with Range support | Resumable, works with OS background downloaders |
+| Local state | SQLite (`expo-sqlite`) + Zustand/React Query | Persistent library, simple UI state |
+| Navigation | Expo Router, bottom tabs: Home, Library | Matches PRD |
+| Distribution | Android APK (EAS) · iOS TestFlight (internal testers) | Private app |
+
+Library choices below are my recommendations from memory, **not verified against current versions**; confirm each in the M1 spike.
+
+## 2. Architecture
+```
+ Phone (RN app)                         Your server (Docker)
+ ┌──────────────────────┐   HTTPS+token  ┌────────────────────────┐
+ │ Home: URL → /info    │ ─────────────► │ FastAPI                │
+ │ Library tabs         │                │  POST /info            │
+ │ Job poller           │ ◄───────────── │  POST /jobs            │
+ │ Background downloader│   GET /files   │  GET  /jobs/{id}       │
+ │ SQLite + file store  │ ◄───────────── │  GET  /files/{id} (Range)
+ └──────────────────────┘                │ yt-dlp + ffmpeg worker │
+                                         │ temp storage + cleanup │
+                                         └────────────────────────┘
+```
+
+### Job lifecycle
+`QUEUED → PREPARING (server downloads/merges) → READY → TRANSFERRING (phone pulls file) → SAVED` · or `FAILED / CANCELLED` at any step.
+- The **Downloading** tab shows both server-side preparing (indeterminate or % from yt-dlp progress) and phone-side transfer progress.
+- Server deletes a file after the phone confirms receipt (`DELETE /jobs/{id}`) or after a TTL.
+
+### Backend API (v1)
+| Endpoint | Purpose |
 |----------|---------|
-| How to get a downloadable stream? | No official API. Two open-source routes: **yt-dlp** (Python; Android wrapper `youtubedl-android` bundles Python + yt-dlp + ffmpeg and has an in-app updater) and **NewPipeExtractor** (pure Java parser used by NewPipe). |
-| Which is better for v1? | **yt-dlp via `youtubedl-android`**: widest format support, fastest to patch (update the binary without an app release), handles merging video+audio via ffmpeg. Cost: larger APK (~50-100 MB). NewPipeExtractor is a lighter fallback but needs you to write download and mux logic. |
-| Current YouTube hurdles | PO tokens, SABR-only formats on the default web client, and a required external JS runtime for newer yt-dlp. Mitigation: pin to a client that works (e.g. `mweb`/`tv`), keep yt-dlp updatable, track the yt-dlp wiki. |
-| Distribution | Google Play prohibits ToS-violating YouTube downloaders → ship as APK/F-Droid. |
-| Opening in default player | Save via MediaStore; on tap fire `Intent.ACTION_VIEW` with the `content://` URI, MIME `video/*`, `FLAG_GRANT_READ_URI_PERMISSION`. Android 7+ forbids `file://`. |
-| Background downloads | Foreground service (type `dataSync`) with notification channel; `POST_NOTIFICATIONS` on Android 13+. |
+| `POST /info {url}` | title, thumbnail, duration, format options |
+| `POST /jobs {url, formatPreset}` | create job → `{id}` |
+| `GET /jobs/{id}` | `{status, progress, filesize, error}` |
+| `DELETE /jobs/{id}` | cancel / cleanup |
+| `GET /files/{id}` | stream file, supports `Range` |
+Auth: `Authorization: Bearer <token>`; only YouTube hostnames accepted; per-token rate limit; request body size limits.
 
-Sources: [youtubedl-android overview](https://awesome.ecosyste.ms/projects/github.com%2Finfinityloop1308%2Fyoutubedl-android), [NewPipeExtractor](https://relatedrepos.com/gh/TeamNewPipe/NewPipeExtractor), [yt-dlp PO Token Guide](https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide), [Play policy discussion](https://www.androidheadlines.com/2026/05/beyond-the-app-store-why-the-best-media-downloaders-arent-on-google-play.html).
-Note: the search results on current yt-dlp/YouTube status were secondary and partly dated; re-verify against the yt-dlp repo before building.
+### Mobile modules (recommended; verify in M1)
+- Transfer with background support: `@kesha-antonov/react-native-background-downloader` (iOS background URLSession + Android) — fallback `expo-file-system` resumable downloads (foreground only).
+- Save to device: `expo-media-library` (Android MediaStore `Movies/`, iOS Photos add-only).
+- Open video:
+  - Android: `expo-intent-launcher` / `react-native-blob-util` `actionViewIntent` with a `content://` URI + `video/mp4` → system default player.
+  - iOS: QuickLook via `react-native-file-viewer` (or `expo-sharing` share sheet).
+- Share intake: `expo-share-intent` (config plugin handles Android intent filter + iOS Share Extension).
+- Secrets: server URL + token in `expo-secure-store`.
 
-## 2. Platform decision
-**Native Android (Kotlin + Jetpack Compose).** The core pieces (foreground service, MediaStore, the yt-dlp wrapper, ACTION_VIEW) are all Android-native; cross-platform frameworks add a bridge layer with no benefit since iOS is out of scope.
-
-## 3. Architecture
+### Project layout
 ```
-UI (Compose)  ──  ViewModels (StateFlow)
-   Home screen / Library screen (tabs)
-        │
-Domain: UseCases (FetchInfo, EnqueueDownload, CancelDownload, DeleteVideo)
-        │
-Data: Room DB (downloads table) · DownloadRepository
-        │
-Engine: YtDlpEngine (wraps youtubedl-android) · EngineUpdater
-        │
-Service: DownloadService (foreground) + notification · MediaStore writer
+/app            Expo Router screens (home, library/[downloading|downloaded])
+/src/api        server client + types
+/src/db         SQLite schema + repos
+/src/transfer   background downloader wrapper, resume logic
+/src/player     openVideo.ts (platform split: .android.ts / .ios.ts)
+/server         FastAPI app, Dockerfile, docker-compose.yml
+/docs
 ```
-- **DI:** Hilt. **Async:** Coroutines/Flow. **Images:** Coil. **DB:** Room.
-- **Download flow:** insert row (QUEUED) → service picks it up → yt-dlp downloads to app cache dir with progress callback → on success, copy/move into `MediaStore.Video` (`Movies/VideoDownloader`) → row = COMPLETED with the content URI → remove temp.
-- **Concurrency:** 2 simultaneous downloads (configurable); queue the rest.
-- **States:** QUEUED, DOWNLOADING, PAUSED/FAILED, COMPLETED, CANCELLED.
 
-### Data model (`downloads`)
-`id, videoId, url, title, thumbnailUrl, durationSec, formatId, status, progress, bytesTotal, bytesDone, speed, etaSec, mediaStoreUri, errorMsg, createdAt, completedAt`
-
-### Open in default player
-```kotlin
-val intent = Intent(Intent.ACTION_VIEW).apply {
-    setDataAndType(Uri.parse(item.mediaStoreUri), "video/*")
-    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-}
-context.startActivity(Intent.createChooser(intent, null)) // or direct startActivity
-```
-Handle `ActivityNotFoundException` and a deleted-file case (URI no longer resolves → prompt to remove the entry).
-
-## 4. Milestones
+## 3. Milestones
 | # | Milestone | Deliverable | Est. |
 |---|-----------|-------------|------|
-| M0 | Project setup | Gradle project, Compose, Hilt, Room, CI build | 1-2 d |
-| M1 | Engine spike | Prove `youtubedl-android` fetches info and downloads a public video on a real device; document working client/args | 2-3 d |
-| M2 | Home screen | URL field, validation, metadata preview, quality picker | 2-3 d |
-| M3 | Download service | Foreground service, queue, progress, notification, cancel | 3-4 d |
-| M4 | Library | Downloading + Downloaded tabs, Room-backed, live progress | 2-3 d |
-| M5 | MediaStore + playback | Save to Movies, tap → default player, delete | 2 d |
-| M6 | Robustness | Resume/retry, process death, offline, low storage, share-sheet intake, engine updater | 3-4 d |
-| M7 | Polish & release | Disclaimer screen, icons, empty/error states, signed APK, README | 2-3 d |
+| M0 | Repo setup | Monorepo (`app/`, `server/`), TS, lint, EAS config, CI | 2 d |
+| M1 | **Spikes (go/no-go)** — (a) server: yt-dlp downloads a public video from the intended host/IP; (b) phone: background download of a large file on real iPhone + Android; (c) iOS save-to-Photos + QuickLook; (d) Android open via content URI | Written results; library choices confirmed | 4-5 d |
+| M2 | Backend v1 | `/info`, `/jobs`, `/files`, auth, Docker image, cleanup, canary test | 4-5 d |
+| M3 | Home screen | URL field, paste, validation, preview, quality picker | 2-3 d |
+| M4 | Transfer + Library | Job poller, background download, SQLite, Downloading/Downloaded tabs | 5-6 d |
+| M5 | Save + play | MediaLibrary save, Android default player, iOS QuickLook/share, delete | 3 d |
+| M6 | Robustness | Resume, retries, offline, low storage, app-kill recovery, share intake, settings screen (server URL/token) | 4-5 d |
+| M7 | Release | Disclaimer, icons, Android APK, iOS TestFlight build, server deploy docs | 3-4 d |
 
-Total ≈ 3-4 weeks for one developer. **M1 is the go/no-go gate**: if the engine can't reliably download, nothing else matters.
+Total ≈ 5-6 weeks for one developer. **M1 is the gate**: if the server IP gets blocked by YouTube or iOS background transfer is unreliable, revisit (home server/residential IP, proxy, or foreground-only transfers).
 
-## 5. Testing
-- Unit: URL parsing, format selection, repository/state transitions.
-- Instrumented: Room, MediaStore write/read, service lifecycle.
-- Manual matrix: Android 8, 10, 13, 14+; Samsung/Pixel; default players (Google Photos, VLC, Samsung Video, MX Player); airplane-mode mid-download; kill app mid-download; low storage.
-- Canary test: scheduled job downloading a known Creative Commons video to detect extractor breakage early.
+## 4. Testing
+- Server: unit tests on URL allow-list, job state machine; integration test against a Creative Commons video; **daily canary** that alerts when extraction fails.
+- App: unit (Jest) for URL parsing, DB, job reducer; E2E (Maestro or Detox) for paste → download → open.
+- Manual matrix: iPhone (iOS 16/17/18) + Android 8/10/13/14; Wi-Fi/cellular switch; airplane mode mid-transfer; kill app mid-transfer; large (>1 GB) file; low storage.
+
+## 5. Deployment
+- Server: `docker compose up` with Caddy/Traefik for automatic HTTPS (or Tailscale to avoid public exposure — **recommended** for a private app; phones then reach the server over the tailnet and no public endpoint exists).
+- yt-dlp auto-update on container start + nightly; optional PO-token provider sidecar if YouTube requires it.
+- EAS Build for both platforms; TestFlight via `eas submit`; set a calendar reminder for the 90-day TestFlight expiry (or automate).
 
 ## 6. Risks and mitigations
 | Risk | Mitigation |
 |------|------------|
-| YouTube changes break extraction | In-app yt-dlp updater, canary test, pin client args remotely-configurable |
-| Large APK from bundled Python/ffmpeg | ABI splits (arm64-v8a only for most users) |
-| ToS / store takedown | Sideload/F-Droid distribution; first-run responsibility notice; no ads/monetisation |
-| Player can't read content URI | Test matrix; fall back to chooser |
-| Battery/OEM killing the service | Foreground service, notification, WorkManager resume on restart |
+| YouTube blocks server IP | Run on home/residential connection; cookies are out of scope; proxy as fallback |
+| Extractor breakage | Nightly yt-dlp update, canary, pinned known-good fallback image |
+| iOS background transfers throttled | Set expectations in UI; resume on foreground; Range requests |
+| iOS "default player" mismatch | QuickLook + share sheet; documented in PRD §7 |
+| Apple beta review of TestFlight external builds | Use internal testers; generic app name/description |
+| Server abuse if token leaks | Tailscale-only access, rotate token, rate limits, host allow-list |
+| ToS/copyright | Private, non-commercial, first-run notice, user responsibility |
 
 ## 7. Next steps
-1. Confirm the open questions in the PRD (distribution, scope).
-2. Run **M1 spike** before committing to the full build.
-3. Then scaffold M0 and proceed in order.
+1. Answer the PRD open questions (server location, Apple account, iOS player behavior).
+2. Run **M1 spikes** (server fetch from your actual network; phone background transfer).
+3. Scaffold M0 and proceed in order.
